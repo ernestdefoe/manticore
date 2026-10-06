@@ -11,6 +11,7 @@
         }
     ],
     "support": {
+        "forum": "https://discuss.flarum.org/d/40009-manticore-typo-tolerant-search-for-flarum-2-without-the-memory-bill",
         "issues": "https://github.com/ernestdefoe/manticore/issues",
         "source": "https://github.com/ernestdefoe/manticore"
     },
