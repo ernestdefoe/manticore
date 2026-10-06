@@ -1,0 +1,43 @@
+{
+    "name": "ernestdefoe/manticore",
+    "description": "Light, typo-tolerant Manticore Search driver for Flarum 2 — free and MIT.",
+    "keywords": ["flarum", "search", "manticore", "manticoresearch", "sphinx", "fulltext"],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ernest Defoe",
+            "email": "ernestdefoe@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ernestdefoe/manticore/issues",
+        "source": "https://github.com/ernestdefoe/manticore"
+    },
+    "require": {
+        "php": "^8.2",
+        "flarum/core": "^2.0",
+        "guzzlehttp/guzzle": "^7.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ernestdefoe\\Manticore\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Manticore Search",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-magnifying-glass",
+                "backgroundColor": "#1f6f5c",
+                "color": "#fff"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
