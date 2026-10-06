@@ -43,10 +43,10 @@ export default class ManticoreControls extends Component<Attrs> {
         m('label', t('drivers_label')),
         m('.helpText', t('drivers_help')),
         DRIVERS.map(([key, label]) => {
-          const driver = setting(key, 'database');
+          const driver = setting(key, 'default');
           return m(
             Switch,
-            { state: driver() === 'manticore', onchange: (v: boolean) => driver(v ? 'manticore' : 'database') },
+            { state: driver() === 'manticore', onchange: (v: boolean) => driver(v ? 'manticore' : 'default') },
             t(label)
           );
         }),
