@@ -97,6 +97,12 @@ composer require ernestdefoe/manticore:^0.1
 php flarum cache:clear
 ```
 
+## Support
+
+- **Support forum:** [Manticore Search on ernestdefoe.online](https://ernestdefoe.online/d/127)
+- **Flarum community:** [Manticore Search on discuss.flarum.org](https://discuss.flarum.org/d/40009-manticore-typo-tolerant-search-for-flarum-2-without-the-memory-bill)
+- **Bug reports:** [GitHub issues](https://github.com/ernestdefoe/manticore/issues)
+
 ## Licence
 
 [MIT](./LICENSE.md) © Ernest Defoe
