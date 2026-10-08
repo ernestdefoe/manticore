@@ -4,3 +4,5 @@ js/node_modules
 js/dist/*.js.map
 .DS_Store
 Thumbs.db
+.phpunit.result.cache
+/tests/integration/tmp
