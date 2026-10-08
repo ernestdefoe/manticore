@@ -1,3 +1,7 @@
+# What the shared Flarum workflows (backend.yml, frontend.yml) don't check:
+# that composer.json is valid, and that the committed JS bundle — what forums
+# actually load, never rebuilt on install — matches a fresh build of js/src.
+
 name: CI
 
 on:
@@ -6,49 +10,50 @@ on:
   pull_request:
   workflow_dispatch:
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
-  php:
-    name: PHP ${{ matrix.php }}
+  composer:
+    name: composer.json
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        php: ['8.2', '8.3', '8.4']
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: '8.3'
           coverage: none
-          tools: composer:v2
+
       - name: Validate composer.json
-        run: composer validate --strict --no-check-publish --no-check-version
-      - name: Lint PHP
-        run: |
-          set -euo pipefail
-          find src extend.php -name '*.php' -print0 | xargs -0 -n1 -P4 php -l
+        run: composer validate --strict
 
   js:
-    name: JS build
+    name: JS bundle
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: js/package-lock.json
-      - working-directory: js
+          node-version: '20'
+
+      - name: Install
+        working-directory: js
         run: npm ci
-      - working-directory: js
+
+      - name: Build
+        working-directory: js
         run: npm run build
+
+      # js/dist is committed and is what forums load. If a build from the
+      # committed source produces different bytes, the shipped bundle is not
+      # the shipped source — which is invisible until someone debugs the wrong
+      # code.
+      - name: Fail if the committed bundle is stale
+        run: |
+          if ! git diff --quiet -- js/dist; then
+            echo "js/dist differs from a fresh build of js/src — run 'npm run build' in js/ and commit." >&2
+            git diff --stat -- js/dist
+            exit 1
+          fi
