@@ -44,11 +44,7 @@ export default class ManticoreControls extends Component<Attrs> {
         m('.helpText', t('drivers_help')),
         DRIVERS.map(([key, label]) => {
           const driver = setting(key, 'default');
-          return m(
-            Switch,
-            { state: driver() === 'manticore', onchange: (v: boolean) => driver(v ? 'manticore' : 'default') },
-            t(label)
-          );
+          return m(Switch, { state: driver() === 'manticore', onchange: (v: boolean) => driver(v ? 'manticore' : 'default') }, t(label));
         }),
       ]),
       m('hr'),
@@ -72,11 +68,7 @@ export default class ManticoreControls extends Component<Attrs> {
       m('.Form-group', [
         m('label', t('rebuild_label')),
         m('.helpText', t('rebuild_help')),
-        m(
-          Button,
-          { className: 'Button', loading: this.rebuilding, onclick: () => this.rebuild() },
-          t('rebuild_button')
-        ),
+        m(Button, { className: 'Button', loading: this.rebuilding, onclick: () => this.rebuild() }, t('rebuild_button')),
       ]),
     ]);
   }

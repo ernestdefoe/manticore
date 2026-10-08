@@ -3,6 +3,7 @@
   "name": "@ernestdefoe/manticore",
   "description": "Manticore Search driver for Flarum 2",
   "devDependencies": {
+    "@flarum/prettier-config": "^1.0.0",
     "flarum-tsconfig": "^2.0.0",
     "flarum-webpack-config": "^3.0.0",
     "prettier": "^3.0.0",
@@ -17,10 +18,5 @@
     "format-check": "prettier --check src",
     "check-typings": "tsc --noEmit --project tsconfig.json"
   },
-  "prettier": {
-    "singleQuote": true,
-    "trailingComma": "es5",
-    "printWidth": 120,
-    "tabWidth": 2
-  }
+  "prettier": "@flarum/prettier-config"
 }
