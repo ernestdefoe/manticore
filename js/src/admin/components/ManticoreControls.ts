@@ -12,7 +12,7 @@ const DRIVERS: [string, string][] = [
   ['search_driver_Flarum\\User\\User', 'use_for_users'],
   ['search_driver_Flarum\\Post\\Post', 'use_for_posts'],
 ];
-const t = (k: string, p?: Record<string, string>) => app.translator.trans(`${K}.admin.${k}`, p);
+const t = (k: string, p: Record<string, string> = {}) => app.translator.trans(`${K}.admin.${k}`, p);
 
 interface Attrs {
   setting: (k: string, d?: string) => (v?: string) => string;
