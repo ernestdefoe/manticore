@@ -48,7 +48,7 @@ class DiscussionIndexer extends AbstractIndexer
     {
         parent::delete($models);
 
-        $gone = array_map(fn ($d) => (int) $d->id, array_filter($models, fn ($d) => ! $d->exists));
+        $gone = array_map(fn ($d) => (int) $d->getKey(), array_filter($models, fn ($d) => ! $d->exists));
         if (empty($gone) || ! $this->manticore->configured()) {
             return;
         }

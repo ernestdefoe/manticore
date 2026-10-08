@@ -46,6 +46,7 @@ abstract class AbstractIndexer implements IndexerInterface
      */
     abstract protected function columns(): string;
 
+    /** @return Builder<covariant AbstractModel> */
     abstract protected function buildQuery(): Builder;
 
     /**
@@ -67,9 +68,9 @@ abstract class AbstractIndexer implements IndexerInterface
             }
             $doc = $this->document($model);
             if ($doc === null) {
-                $gone[] = (int) $model->id;
+                $gone[] = (int) $model->getKey();
             } else {
-                $docs[(int) $model->id] = $doc;
+                $docs[(int) $model->getKey()] = $doc;
             }
         }
 
@@ -92,7 +93,7 @@ abstract class AbstractIndexer implements IndexerInterface
         }
 
         try {
-            $this->remove('id', array_map(fn ($m) => (int) $m->id, $models));
+            $this->remove('id', array_map(fn ($m) => (int) $m->getKey(), $models));
         } catch (RuntimeException $e) {
             $this->log->warning('[manticore] '.static::index().' delete failed: '.$e->getMessage());
         }
@@ -115,7 +116,7 @@ abstract class AbstractIndexer implements IndexerInterface
             $docs = [];
             foreach ($models as $model) {
                 if (($doc = $this->document($model)) !== null) {
-                    $docs[(int) $model->id] = $doc;
+                    $docs[(int) $model->getKey()] = $doc;
                 }
             }
             $this->write($docs, 30.0);
