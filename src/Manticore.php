@@ -187,6 +187,11 @@ class Manticore
             $this->cache->put(self::DOWN_KEY, true, self::DOWN_TTL);
 
             throw new RuntimeException('unreachable: '.$e->getMessage(), 0, $e);
+        } catch (\InvalidArgumentException $e) {
+            // A host Guzzle cannot make a URL of, such as "host:port" typed
+            // into the host field. Reported like any other failure, so a
+            // save or a search carries on instead of failing with a 500.
+            throw new RuntimeException('invalid host: '.$e->getMessage(), 0, $e);
         }
 
         $body = json_decode((string) $response->getBody(), true);
