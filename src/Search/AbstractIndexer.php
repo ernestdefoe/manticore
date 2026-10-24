@@ -6,7 +6,6 @@ use Ernestdefoe\Manticore\Manticore;
 use Flarum\Database\AbstractModel;
 use Flarum\Search\IndexerInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 /**
@@ -34,8 +33,7 @@ abstract class AbstractIndexer implements IndexerInterface
     protected const FIELDS = [];
 
     public function __construct(
-        protected Manticore $manticore,
-        protected LoggerInterface $log
+        protected Manticore $manticore
     ) {
     }
 
@@ -82,7 +80,7 @@ abstract class AbstractIndexer implements IndexerInterface
             $this->write($docs, 5.0);
             $this->remove('id', $gone);
         } catch (RuntimeException $e) {
-            $this->log->warning('[manticore] '.static::index().' save failed: '.$e->getMessage());
+            $this->manticore->report(static::index().' save failed', $e);
         }
     }
 
@@ -95,7 +93,7 @@ abstract class AbstractIndexer implements IndexerInterface
         try {
             $this->remove('id', array_map(fn ($m) => (int) $m->getKey(), $models));
         } catch (RuntimeException $e) {
-            $this->log->warning('[manticore] '.static::index().' delete failed: '.$e->getMessage());
+            $this->manticore->report(static::index().' delete failed', $e);
         }
     }
 

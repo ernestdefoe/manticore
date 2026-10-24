@@ -56,7 +56,7 @@ class DiscussionIndexer extends AbstractIndexer
         try {
             $this->manticore->sql('DELETE FROM '.$this->manticore->table(PostIndexer::index()).' WHERE discussion_id IN ('.implode(',', $gone).')');
         } catch (RuntimeException $e) {
-            $this->log->warning('[manticore] posts of deleted discussions not removed: '.$e->getMessage());
+            $this->manticore->report('posts of deleted discussions not removed', $e);
         }
     }
 }

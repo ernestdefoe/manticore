@@ -29,6 +29,12 @@ class Manticore
 
     protected const DOWN_TTL = 30;
 
+    /**
+     * The message of a call skipped because an outage is remembered: already
+     * logged when it began, so never logged again.
+     */
+    protected const SKIPPED = 'unreachable';
+
     private ?Client $http = null;
 
     public function __construct(
@@ -128,9 +134,20 @@ class Manticore
                     // Fall through: the plain query failed as well.
                 }
             }
-            $this->log->warning('[manticore] search failed, using the database: '.$e->getMessage());
+            $this->report('search failed, using the database', $e);
 
             return null;
+        }
+    }
+
+    /**
+     * Logs a failure once per outage: calls skipped while it is remembered
+     * stay quiet, instead of one warning per search and save.
+     */
+    public function report(string $what, RuntimeException $e): void
+    {
+        if ($e->getMessage() !== self::SKIPPED) {
+            $this->log->warning("[manticore] $what: ".$e->getMessage());
         }
     }
 
@@ -176,7 +193,7 @@ class Manticore
     protected function request(string $uri, array $options, float $timeout): array
     {
         if ($this->cache->get(self::DOWN_KEY)) {
-            throw new RuntimeException('unreachable');
+            throw new RuntimeException(self::SKIPPED);
         }
 
         try {

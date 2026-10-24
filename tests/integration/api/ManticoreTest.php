@@ -186,4 +186,21 @@ class ManticoreTest extends TestCase
 
         $this->assertSame(201, $response->getStatusCode(), (string) $response->getBody());
     }
+
+    #[Test]
+    public function an_outage_is_logged_once_not_on_every_search_and_save()
+    {
+        $this->useManticore();
+        $this->setting('search_cjk_mode', '1');
+        $log = new \Monolog\Handler\TestHandler();
+        $this->app()->getContainer()->instance(\Psr\Log\LoggerInterface::class, new \Monolog\Logger('test', [$log]));
+
+        foreach (['starter', 'gears', 'sourdough'] as $q) {
+            $this->assertSame(200, $this->send($this->request('GET', '/api/discussions')->withQueryParams(['filter' => ['q' => $q]]))->getStatusCode());
+        }
+        $this->assertSame(201, $this->reply()->getStatusCode());
+
+        $manticore = array_filter($log->getRecords(), fn ($r) => str_contains($r->message, '[manticore]'));
+        $this->assertCount(1, $manticore, implode("\n", array_map(fn ($r) => $r->message, $manticore)));
+    }
 }
