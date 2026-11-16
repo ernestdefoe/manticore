@@ -252,6 +252,8 @@ jobs:
 
           CONTENT_MD=$(printf '## %s %s\n\n%s\n\n[View release on GitHub](%s)\n\n☕ If you like the things I have built, consider [buying me a coffee](https://buymeacoffee.com/ernestdefoe).\n' \
             "$REPO_NAME" "$RELEASE_TAG" "${POST_BODY:-_No release notes provided._}" "$RELEASE_URL")
+          # Private repo: its GitHub release page 404s for everyone else, so leave the link out.
+          if [ "${{ github.event.repository.private }}" = "true" ]; then CONTENT_MD=$(printf '%s\n' "$CONTENT_MD" | grep -v 'on GitHub](' || true); fi
 
           # 🚨 Render to HTML before posting. Release notes are Markdown, and the
           # support site has no Markdown extension — Scribe replaced it — so
@@ -275,7 +277,7 @@ jobs:
           # notes rendered fine on other repos the same week.
           CONTENT=""
           for attempt in 1 2; do
-            if CONTENT=$(jq -n --arg text "$CONTENT_MD" '{text:$text, mode:"gfm"}' \
+            if CONTENT=$(jq -n --arg text "$CONTENT_MD" '{text:$text, mode:"markdown"}' \
                  | gh api --method POST /markdown --input - 2>/tmp/md-render-err.txt) \
                && [ -n "$CONTENT" ]; then
               break
@@ -317,6 +319,22 @@ jobs:
             s|</pre>\s*</div>|</pre>|g;
             s|</?markdown-accessiblity-table>||g;
             #
+            # 🚨 A HEADING posts its permalink furniture as visible text.
+            #
+            # In "markdown" mode GitHub wraps every heading like this:
+            #   <div class="markdown-heading"><h2 class="heading-element">T</h2>
+            #   <a class="anchor"><span class="octicon octicon-link"></span></a></div>
+            #
+            # Flarum allows the heading and nothing else there, so it escapes
+            # the div, the anchor and the span, and the reader is shown the
+            # markup instead of a title. Keep the heading, drop the furniture.
+            s{<div class="markdown-heading">(.*?)</div>}{
+              my $h = $1;
+              $h =~ s{<a[^>]*class="anchor".*?</a>}{}gs;
+              $h =~ s{ class="heading-element"}{}g;
+              $h;
+            }ges;
+            #
             # 🚨 A FENCED CODE BLOCK posts its own wrapper as visible text.
             #
             # Flarum renders <pre> and supplies its OWN <code>, escaping
@@ -339,7 +357,7 @@ jobs:
             # what it is given — the same reason the <code> rule below does it.
             # Highlighting still happens: Flarum loads hljs client-side.
             #
-            # Must run BEFORE the inline-<code> rule, or its non-greedy
+            # Must run BEFORE the inline-<code> rule, whose non-greedy
             # match pairs an opening <code> inside a <pre> with a closing tag
             # outside it.
             s{<pre[^>]*>(.*?)</pre>}{
@@ -359,6 +377,14 @@ jobs:
               $open . $inner . "</code>";
             }ges;
             s|&amp;|&|g;
+            #
+            # 🚨 Flarum makes its OWN <br> from any newline inside a block.
+            #
+            # The renderer pretty-prints, so a wrapped paragraph arrives as
+            # several lines and Flarum turned every one of those into a visible
+            # line break. Hand it one line per block. Newlines inside <pre> are
+            # content, so they are kept.
+            s{(<pre.*?</pre>)|\n+}{ defined $1 ? $1 : " " }ges;
           ')
 
           # 🚨 A rerun of this job must not post the release twice. If one of
@@ -476,6 +502,8 @@ jobs:
               }
             }')
           CONTENT=$(printf '## %s\n\n%s\n\n[Release on GitHub](%s)\n\n☕ If you like the things I have built, consider [buying me a coffee](https://buymeacoffee.com/ernestdefoe).\n' "$heading" "$notes" "$RELEASE_URL")
+          # Private repo: its GitHub release page 404s for everyone else, so leave the link out.
+          if [ "${{ github.event.repository.private }}" = "true" ]; then CONTENT=$(printf '%s\n' "$CONTENT" | grep -v 'on GitHub](' || true); fi
 
           # 🚨 A rerun of this job must not post the release twice. If one of
           # the thread's latest posts already opens with this release's
